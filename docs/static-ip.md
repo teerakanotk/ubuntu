@@ -1,4 +1,4 @@
-# คู่มือการตั้งค่า Static IP Address บน Linux ubuntu 22.04 LTS (CLI)
+# วิธีการตั้งค่า Static IP Address บน Linux ubuntu 22.04 LTS (CLI)
 
 ### 1. อัปเดตแพตช์ความปลอดภัยของระบบ
 
