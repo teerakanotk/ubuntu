@@ -101,7 +101,7 @@ zone "ctsurin.com" {
 
 > เปลี่ยน ctsurin.com เป็นชื่อโดเมนที่ต้องการ
 
-สร้างไฟล์สำหรับโซน ```ctsurin.com``` โดยใช้เทมเพลตจาก ```/etc/bind/db.local```
+คัดลอกไฟล์ ```/etc/bind/db.local``` แล้วตั้งชื่อเป็น ```/etc/bind/db.ctsurin.com```
 
 ```bash
 sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.com
@@ -153,7 +153,7 @@ zone "254.11.10.in-addr.arpa" {
 > - เปลี่ยน 254.11.10 เป็นเลข 3 ชุดแรกของ IP มาสลับลำดับจากหลังมาหน้า เช่น 192.168.100.0 จะได้ 100.192.168.in-addr.arpa
 > - เปลี่ยน db.10 เป็น db.<IP_ตัวแรกสุด> เช่น 192.168.100.0 จะได้ db.192
 
-สร้างไฟล์ ```/etc/bind/db.10``` โดยใช้เทมเพลตจาก ```/etc/bind/db.127```
+คัดลอกไฟล์ ```/etc/bind/db.127``` แล้วตั้งชื่อเป็น ```/etc/bind/db.10```
 
 ```bash
 sudo cp /etc/bind/db.127 /etc/bind/db.10
