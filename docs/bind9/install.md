@@ -1,6 +1,6 @@
-# วิธีการติดตั้ง DNS Server บน Linux ubuntu 22.04 LTS (CLI)
+# ขั้นตอนการติดตั้ง DNS Server (Bind9)
 
-## Bind9
+## Install
 
 ### 1. อัปเดตระบบและติดตั้งแพตช์ความปลอดภัยให้เป็นเวอร์ชันล่าสุด
 
@@ -193,7 +193,7 @@ note:
 sudo systemctl restart bind9.service
 ```
 
-## ทดสอบการตั้งค่า
+## Test
 
 ### 1. resolve.conf
 
