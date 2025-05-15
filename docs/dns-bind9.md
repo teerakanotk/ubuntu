@@ -181,3 +181,7 @@ $TTL    604800
 > Serial Number จะต้องเพิ่มค่าขึ้นทุกครั้งที่มีการแก้ไขไฟล์ทั้งในโซน Forward และ Reverse
 
 จากนั้นรีสตาร์ท service bind9 เพื่อให้การตั้งค่ามีผล
+
+```bash
+sudo systemctl restart bind9.service
+```
