@@ -6,29 +6,31 @@
 sudo apt update && sudo apt upgrade -y
 ```
 
-### 2. วิธีกำหนดค่า Static IP address [คลิก](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
+### 2.ตั้งค่า Static IP และติดตั้งแพ็คเกจ ```bind9```
 
-### 3. หลังจากกำหนดค่า Static IP เรียบร้อยแล้ว ให้ติดตั้งแพ็คเกจ ```bind9```
+[วิธีการกำหนดค่า Static IP address](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
+
+ติดตั้งแพ็คเกจ bind9
 
 ```bash
 sudo apt install bind9
 ```
 
-ติดตั้งแพ็คเกจ ```dnsutils``` สำหรับทดสอบและแก้ไขปัญหา
+(optional) ติดตั้งแพ็คเกจ ```dnsutils``` สำหรับทดสอบและแก้ไขปัญหา
 
 ```bash
 sudo apt install dnsutils
 ```
 
-### 4. รายละเอียด Config file
+### 3. รายละเอียด Config file
 
-ไฟล์กำหนดค่าของ DNS จะถูกเก็บไว้ในไดเรกทอรี ```/etc/bind``` โดยไฟล์หลักที่ใช้ในการกำหนดค่าคือ ```/etc/bind/named.conf```
+ไฟล์กำหนดค่าของ DNS จะถูกเก็บไว้ในไดเรกทอรี ```/etc/bind```
 
 - ```/etc/bind/named.conf.options``` สำหรับกำหนดค่า forwarders, acl
 
 - ```/etc/bind/named.conf.local``` สำหรับกำหนด zone
 
-### 5. ตั้งค่า Caching nameserver
+### 4. ตั้งค่า Caching nameserver
 
 กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ที่กำหนดเอาไว้ภายใน ```forwarders```
 
@@ -37,8 +39,6 @@ sudo apt install dnsutils
 ```bash
 sudo nano /etc/bind/named.conf.options
 ```
-
-Output:
 
 ```
 options {
@@ -67,7 +67,7 @@ options {
 };
 ```
 
-ลบคอมเมนต์ ```//``` และแก้ไขในส่วนของ forwarders โดยเปลี่ยนจาก ```0.0.0.0``` เป็นไอพีแอดเดรส DNS Server ที่ต้องการ 
+ลบ```//```ออก จากนั้นแก้ไขในส่วนของ forwarders โดยเปลี่ยนจาก ```0.0.0.0``` เป็นไอพีแอดเดรส DNS Server ที่ต้องการ 
 
 ```bash
 forwarders {
@@ -76,13 +76,11 @@ forwarders {
 };
 ```
 
-จากนั้น restart bind9
-
 ```bash
 sudo systemctl restart bind9
 ```
 
-### 6. ตั้งค่า Forward zone File
+### 5. ตั้งค่า Forward zone File
 
 เปิดไฟล์ ```/etc/bind/named.conf.local``` 
 
@@ -128,13 +126,11 @@ $TTL    604800
 ns      IN      A       10.11.254.10
 ```
 
-จากนั้น restart bind9
-
 ```bash
 sudo systemctl restart bind9
 ```
 
-### 7. ตั้งค่า Reverse zone File
+### 6. ตั้งค่า Reverse zone File
 
 การตั้งค่า Reverse Zone เพื่อให้ DNS สามารถแปลง IP Address กลับเป็นชื่อโดเมน ให้แก้ไขไฟล์
 
@@ -184,8 +180,6 @@ $TTL    604800
 
 note:
 - ควรเพิ่ม Serial ทุกครั้งที่มีการอัพเดทหรือแก้ไขไฟล์ โดยเพิ่มทีละ 1 หน่วย
-
-จากนั้น restart bind9
 
 ```bash
 sudo systemctl restart bind9.service
