@@ -32,7 +32,7 @@ sudo apt install dnsutils
 
 ### 4. ตั้งค่า Caching nameserver
 
-กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ที่กำหนดเอาไว้ภายใน ```forwarders```
+กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ที่กำหนดเอาไว้ภายใน ```forwarders```**
 
 เปิดไฟล์ ```/etc/bind/named.conf.options```
 
@@ -40,7 +40,9 @@ sudo apt install dnsutils
 sudo nano /etc/bind/named.conf.options
 ```
 
-```
+ผลลัพธ์:
+
+```bash
 options {
         directory "/var/cache/bind";
 
@@ -67,7 +69,7 @@ options {
 };
 ```
 
-ลบ```//```ออก จากนั้นแก้ไขในส่วนของ forwarders โดยเปลี่ยนจาก ```0.0.0.0``` เป็นไอพีแอดเดรส DNS Server ที่ต้องการ 
+จากนั้นแก้ไขในส่วนของ forwarders โดยเปลี่ยนจาก ```0.0.0.0``` เป็นไอพีแอดเดรส DNS Server ที่ต้องการ 
 
 ```bash
 forwarders {
@@ -106,7 +108,32 @@ note:
 sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.com
 ```
 
-แก้ไขไฟล์ ```/etc/bind/db.ctsurin.com``` โดยเปลี่ยน ```localhost``` เป็น ctsurin หรือชื่อโดเมนที่ต้องการ ตามด้วย ```. (จุด)``` หลังชื่อโดเมน และเปลี่ยน ```127.0.0.1``` เป็น IP address ของเครื่องเซิร์ฟเวอร์ ตัวอย่าง
+เปิดไฟล์ ```/etc/bind/db.ctsurin.com```
+
+```bash
+sudo nano /etc/bind/db.ctsurin.com
+```
+
+ผลลัพธ์:
+
+```bash
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     localhost. root.localhost. (
+                              2         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      localhost.
+@       IN      A       127.0.0.1
+@       IN      AAAA    ::1
+```
+
+เปลี่ยน ```localhost``` เป็น ```ctsurin หรือชื่อโดเมนที่ต้องการ``` ตามด้วย ```. (จุด)``` หลังชื่อโดเมน และเปลี่ยน ```127.0.0.1``` เป็น ```IP address ของเครื่องเซิร์ฟเวอร์```
 
 ```bash
 ;
