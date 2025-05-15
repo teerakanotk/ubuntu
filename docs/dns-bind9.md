@@ -38,7 +38,34 @@ sudo apt install dnsutils
 sudo nano /etc/bind/named.conf.options
 ```
 
-ยกเลิกการคอมเมนต์ (ถ้ามี) และเพิ่มส่วนต่อไปนี้ภายใต้ ```options```:
+```
+options {
+        directory "/var/cache/bind";
+
+        // If there is a firewall between you and nameservers you w>
+        // to talk to, you may need to fix the firewall to allow mu>
+        // ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+
+        // If your ISP provided one or more IP addresses for stable
+        // nameservers, you probably want to use them as forwarders>
+        // Uncomment the following block, and insert the addresses >
+        // the all-0's placeholder.
+
+        // forwarders {
+        //        0.0.0.0;
+        // };
+
+        //=========================================================>
+        // If BIND logs error messages about the root key being exp>
+        // you will need to update your keys.  See https://www.isc.>
+        //=========================================================>
+        dnssec-validation auto;
+
+        listen-on-v6 { any; };
+};
+```
+
+ยกเลิกการคอมเมนต์ และเพิ่มส่วนต่อไปนี้ภายใต้ ```options```:
 
 ```bash
 forwarders {
@@ -56,6 +83,14 @@ sudo systemctl restart bind9
 ```
 
 ### 6. ตั้งค่า Forward zone File
+
+เปิดไฟล์ ```/etc/bind/named.conf.local``` 
+
+```bash
+sudo nano /etc/bind/named.conf.local
+```
+
+เพิ่มการตั้งค่าต่อไปนี้
 
 ```bash
 zone "ctsurin.com" {
