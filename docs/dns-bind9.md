@@ -3,7 +3,7 @@
 ### 1. อัปเดตระบบและติดตั้งแพตช์ความปลอดภัยให้เป็นเวอร์ชันล่าสุด
 
 ```bash
-sudo apt update -y && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 
 ### 2. วิธีกำหนดค่า Static IP address [คลิก](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
