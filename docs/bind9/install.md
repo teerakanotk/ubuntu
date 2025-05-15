@@ -169,6 +169,10 @@ sudo cp /etc/bind/db.127 /etc/bind/db.10
 
 แก้ไขไฟล์ `/etc/bind/db.10` เหมือนกันกับ `Forward zone`
 
+```bash
+sudo nano /etc/bind/db.10
+```
+
 ```
 ;
 ; BIND reverse data file for local 10.11.254.XXX net
