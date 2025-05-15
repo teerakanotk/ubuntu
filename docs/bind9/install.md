@@ -1,7 +1,5 @@
 # ขั้นตอนการติดตั้ง DNS Server (Bind9)
 
-## Install
-
 ### 1. อัปเดตระบบและติดตั้งแพตช์ความปลอดภัยให้เป็นเวอร์ชันล่าสุด
 
 ```bash
@@ -101,23 +99,6 @@ sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.com
 sudo nano /etc/bind/db.ctsurin.com
 ```
 
-```
-;
-; BIND data file for local loopback interface
-;
-$TTL    604800
-@       IN      SOA     localhost. root.localhost. (
-                              2         ; Serial
-                         604800         ; Refresh
-                          86400         ; Retry
-                        2419200         ; Expire
-                         604800 )       ; Negative Cache TTL
-;
-@       IN      NS      localhost.
-@       IN      A       127.0.0.1
-@       IN      AAAA    ::1
-```
-
 - เปลี่ยน `localhost` เป็น `ชื่อโดเมน`
 - เปลี่ยน `127.0.0.1` เป็น `IP address ของเครื่องเซิร์ฟเวอร์`
 
@@ -197,11 +178,15 @@ note:
 sudo systemctl restart bind9.service
 ```
 
-## Test
+## ทดสอบ
 
-### 1. resolve.conf
+### 1. resolv.conf
 
-แก้ไขไฟล์ `/etc/resolve.conf` โดยตั้งค่าดังนี้
+แก้ไขไฟล์ `/etc/resolv.conf` 
+
+```bash
+sudo nano /etc/resolv.conf
+```
 
 ```
 nameserver 127.0.0.53
@@ -209,6 +194,10 @@ search ctsurin.com
 ```
 
 จากนั้นใช้คำสั่ง `resolvectl status`
+
+```bash
+resolvectl status
+```
 
 ```bash
 Global
