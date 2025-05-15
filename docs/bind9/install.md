@@ -1,5 +1,7 @@
 # วิธีการติดตั้ง DNS Server บน Linux ubuntu 22.04 LTS (CLI)
 
+## Bind9
+
 ### 1. อัปเดตระบบและติดตั้งแพตช์ความปลอดภัยให้เป็นเวอร์ชันล่าสุด
 
 ```bash
@@ -22,15 +24,7 @@ sudo apt install bind9
 sudo apt install dnsutils
 ```
 
-### 3. รายละเอียด Config file
-
-ไฟล์กำหนดค่าของ DNS จะถูกเก็บไว้ในไดเรกทอรี `/etc/bind`
-
-- `/etc/bind/named.conf.options` สำหรับกำหนดค่า forwarders, acl
-
-- `/etc/bind/named.conf.local` สำหรับกำหนด zone
-
-### 4. ตั้งค่า Caching nameserver
+### 3. ตั้งค่า Caching nameserver
 
 กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ที่กำหนดเอาไว้ภายใน `forwarders`**
 
@@ -74,7 +68,7 @@ forwarders {
 };
 ```
 
-### 5. ตั้งค่า Forward zone File
+### 4. ตั้งค่า Forward zone File
 
 Forward zone คือ โซนที่ใช้เก็บ record สำหรับแปลงชื่อ ให้กลายเป็น IP
 
@@ -145,7 +139,7 @@ $TTL    604800
 ns      IN      A       10.11.254.10
 ```
 
-### 6. ตั้งค่า Reverse zone File
+### 5. ตั้งค่า Reverse zone File
 
 Reverse zone คือ โซนที่ใช้เก็บ record สำหรับแปลง IP Address ให้กลายเป็นชื่อโดเมน (ตรงกันข้ามกับ Forward Zone ที่แปลงชื่อเป็น IP)
 
