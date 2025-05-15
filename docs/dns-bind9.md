@@ -20,23 +20,25 @@ sudo apt install bind9
 sudo apt install dnsutils
 ```
 
-### 4. รายละเอียดไฟล์กำหนดค่าระบบ (Configuration files)
+### 4. รายละเอียด Config file
 
 ไฟล์กำหนดค่าของ DNS จะถูกเก็บไว้ในไดเรกทอรี ```/etc/bind``` โดยไฟล์หลักที่ใช้ในการกำหนดค่าคือ ```/etc/bind/named.conf```
 
-- ```/etc/bind/named.conf.options``` กำหนดค่าทั่วไป เช่น forwarders, ACL
+- ```/etc/bind/named.conf.options``` สำหรับกำหนดค่า forwarders, acl
 
-- ```/etc/bind/named.conf.local``` zone ของโดเมน
-
-- ```/etc/bind/named.conf.default-zones``` zone เริ่มต้น
+- ```/etc/bind/named.conf.local``` สำหรับกำหนด zone
 
 ### 5. ตั้งค่า Caching nameserver
 
-การตั้งค่า Caching nameserver มีความสำคัญในกรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ของผู้ให้บริการอินเทอร์เน็ต (ISP)** หรือ **DNS Server อื่นๆ ที่กำหนดไว้**
+กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ที่กำหนดเอาไว้ภายใน ```forwarders```
+
+เปิดไฟล์ ```/etc/bind/named.conf.options```
 
 ```bash
 sudo nano /etc/bind/named.conf.options
 ```
+
+Output:
 
 ```
 options {
@@ -65,7 +67,7 @@ options {
 };
 ```
 
-ยกเลิกการคอมเมนต์ และเพิ่มส่วนต่อไปนี้ภายใต้ ```options```:
+ลบคอมเมนต์ ```//``` และแก้ไขในส่วนของ forwarders โดยเปลี่ยนจาก ```0.0.0.0``` เป็นไอพีแอดเดรส DNS Server ที่ต้องการ 
 
 ```bash
 forwarders {
@@ -74,9 +76,7 @@ forwarders {
 };
 ```
 
-> เปลี่ยน 1.1.1.1 และ 1.0.0.1 เป็น IP address ที่ต้องการ
-
-หลังจากแก้ไขเสร็จแล้ว restart service bind9 เพื่อให้การตั้งค่ามีผล
+จากนั้น restart bind9
 
 ```bash
 sudo systemctl restart bind9
@@ -99,7 +99,8 @@ zone "ctsurin.com" {
 };
 ```
 
-> เปลี่ยน ctsurin.com เป็นชื่อโดเมนที่ต้องการ
+note:
+- เปลี่ยน ```ctsurin.com``` เป็นชื่อโดเมนที่ต้องการ
 
 คัดลอกไฟล์ ```/etc/bind/db.local``` แล้วตั้งชื่อเป็น ```/etc/bind/db.ctsurin.com```
 
@@ -107,7 +108,7 @@ zone "ctsurin.com" {
 sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.com
 ```
 
-แก้ไขไฟล์ ```/etc/bind/db.ctsurin.com``` โดยเปลี่ยน ```localhost``` เป็น ctsurin หรือชื่อโดเมนที่ต้องการ ตามด้วย ```. (จุด)``` หลังชื่อโดเมน และเปลี่ยน ```127.0.0.1``` เป็น IP address ของเครื่องเซิร์ฟเวอร์ เช่น ```10.11.254.10```
+แก้ไขไฟล์ ```/etc/bind/db.ctsurin.com``` โดยเปลี่ยน ```localhost``` เป็น ctsurin หรือชื่อโดเมนที่ต้องการ ตามด้วย ```. (จุด)``` หลังชื่อโดเมน และเปลี่ยน ```127.0.0.1``` เป็น IP address ของเครื่องเซิร์ฟเวอร์ ตัวอย่าง
 
 ```bash
 ;
@@ -127,7 +128,7 @@ $TTL    604800
 ns      IN      A       10.11.254.10
 ```
 
-จากนั้นรีสตาร์ท service bind9 เพื่อให้การตั้งค่ามีผล
+จากนั้น restart bind9
 
 ```bash
 sudo systemctl restart bind9
@@ -150,8 +151,9 @@ zone "254.11.10.in-addr.arpa" {
 };
 ```
 
-> - เปลี่ยน 254.11.10 เป็นเลข 3 ชุดแรกของ IP มาสลับลำดับจากหลังมาหน้า เช่น 192.168.100.0 จะได้ 100.192.168.in-addr.arpa
-> - เปลี่ยน db.10 เป็น db.<IP_ตัวแรกสุด> เช่น 192.168.100.0 จะได้ db.192
+note:
+- เปลี่ยน 254.11.10 เป็นเลข 3 ชุดแรกของ IP มาสลับลำดับจากหลังมาหน้า เช่น 192.168.100.0 จะได้ 100.192.168.in-addr.arpa
+- เปลี่ยน db.10 เป็น db.<ip> เช่น 192.168.100.0 จะได้ db.192
 
 คัดลอกไฟล์ ```/etc/bind/db.127``` แล้วตั้งชื่อเป็น ```/etc/bind/db.10```
 
@@ -160,6 +162,9 @@ sudo cp /etc/bind/db.127 /etc/bind/db.10
 ```
 
 แก้ไขไฟล์ภายใน โดยการตั้งค่าเหมือนกันกับ Forward zone
+```bash
+sudo nano /etc/bind/db.10
+```
 
 ```bash
 ;
@@ -177,10 +182,10 @@ $TTL    604800
 10      IN      PTR     ns.ctsurin.com.
 ```
 
-> สำคัญ:<br>
-> Serial Number จะต้องเพิ่มค่าขึ้นทุกครั้งที่มีการแก้ไขไฟล์ทั้งในโซน Forward และ Reverse
+note:
+- ควรเพิ่ม Serial ทุกครั้งที่มีการอัพเดทหรือแก้ไขไฟล์ โดยเพิ่มทีละ 1 หน่วย
 
-จากนั้นรีสตาร์ท service bind9 เพื่อให้การตั้งค่ามีผล
+จากนั้น restart bind9
 
 ```bash
 sudo systemctl restart bind9.service
