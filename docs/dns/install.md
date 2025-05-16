@@ -1,6 +1,6 @@
 # ขั้นตอนการติดตั้ง DNS Server (Bind9)
 
-### 1. อัปเดตระบบและติดตั้งแพตช์ความปลอดภัยให้เป็นเวอร์ชันล่าสุด
+### 1. อัปเดตระบบให้เป็นเวอร์ชันล่าสุด
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -8,7 +8,7 @@ sudo apt update && sudo apt upgrade -y
 
 ### 2.ตั้งค่า Static IP และติดตั้งแพ็คเกจ `bind9`
 
-[วิธีการกำหนดค่า Static IP address](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
+[Static IP address](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
 
 ติดตั้งแพ็คเกจ bind9
 
@@ -16,7 +16,7 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install bind9
 ```
 
-(optional) ติดตั้งแพ็คเกจ `dnsutils` สำหรับทดสอบและแก้ไขปัญหา
+ติดตั้งแพ็คเกจ `dnsutils` สำหรับทดสอบและแก้ไขปัญหา
 
 ```bash
 sudo apt install dnsutils
@@ -24,11 +24,13 @@ sudo apt install dnsutils
 
 ### 3. ตั้งค่า Caching nameserver
 
-กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ **ส่งต่อ (forward)** คำขอเหล่านั้นไปยัง **DNS Server ที่กำหนดเอาไว้ภายใน `forwarders`**
+กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ `ส่งต่อ (forward)` คำขอเหล่านั้นไปยัง `IP address` ที่กำหนดเอาไว้ภายใน **forwarders**
 
 ```bash
 sudo nano /etc/bind/named.conf.options
 ```
+
+ในส่วน forwarders ให้เปลี่ยนจาก `0.0.0.0` เป็นที่อยู่ไอพีแอดเดรสของ dns server ที่ต้องการส่งต่อ เช่น ผู้ให้บริการอินเทอร์เน็ต (ISP)
 
 ```
 options {
@@ -43,9 +45,10 @@ options {
         // Uncomment the following block, and insert the addresses >
         // the all-0's placeholder.
 
-        // forwarders {
-        //        0.0.0.0;
-        // };
+         forwarders {
+                1.1.1.1;
+                1.0.0.1;
+         };
 
         //=========================================================>
         // If BIND logs error messages about the root key being exp>
@@ -57,18 +60,7 @@ options {
 };
 ```
 
-ในส่วนของ forwarders เปลี่ยนจาก `0.0.0.0` เป็นไอพีแอดเดรส DNS Server ที่ต้องการ
-
-```
-forwarders {
-  1.1.1.1;
-  1.0.0.1;
-};
-```
-
 ### 4. ตั้งค่า Forward zone File
-
-Forward zone คือ โซนที่ใช้เก็บ record สำหรับแปลงชื่อ ให้กลายเป็น IP
 
 ```bash
 sudo nano /etc/bind/named.conf.local
@@ -77,44 +69,43 @@ sudo nano /etc/bind/named.conf.local
 เพิ่มการตั้งค่าต่อไปนี้
 
 ```
-zone "ctsurin.com" {
+zone "ctsurin.local" {
   type master;
-  file "/etc/bind/db.ctsurin.com";
+  file "/etc/bind/db.ctsurin.local";
 };
 ```
 
-note:
+> เปลี่ยน ctsurin.local เป็นชื่อโดเมนที่ต้องการ
 
-- เปลี่ยน `ctsurin.com` เป็นชื่อโดเมนที่ต้องการ
-
-คัดลอกไฟล์ `/etc/bind/db.local` แล้วตั้งชื่อเป็น `/etc/bind/db.ctsurin.com`
+คัดลอกไฟล์ `/etc/bind/db.local` แล้วตั้งชื่อเป็น `/etc/bind/db.ctsurin.local`
 
 ```bash
-sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.com
+sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.local
 ```
 
-เปิดไฟล์ `/etc/bind/db.ctsurin.com`
+จากนั้นแก้ไขข้อความภายในไฟล์ `/etc/bind/db.ctsurin.local`
 
 ```bash
-sudo nano /etc/bind/db.ctsurin.com
+sudo nano /etc/bind/db.ctsurin.local
 ```
 
-- เปลี่ยน `localhost` เป็น `ชื่อโดเมน`
-- เปลี่ยน `127.0.0.1` เป็น `IP address ของเครื่องเซิร์ฟเวอร์`
+> Note:<br>
+> เปลี่ยน `localhost` เป็น ชื่อโดเมนที่ต้องการ<br>
+> เปลี่ยน `127.0.0.1` เป็น IP address ของเครื่องเซิร์ฟเวอร์
 
 ```
 ;
-; BIND data file for ctsurin.com
+; BIND data file for ctsurin.local
 ;
 $TTL    604800
-@       IN      SOA     ctsurin.com. root.ctsurin.com. (
+@       IN      SOA     ctsurin.local. root.ctsurin.local. (
                               2         ; Serial
                          604800         ; Refresh
                           86400         ; Retry
                         2419200         ; Expire
                          604800 )       ; Negative Cache TTL
 
-@       IN      NS      ns.ctsurin.com.
+@       IN      NS      ns.ctsurin.local.
 @       IN      A       10.11.254.10
 @       IN      AAAA    ::1
 ns      IN      A       10.11.254.10
@@ -122,13 +113,11 @@ ns      IN      A       10.11.254.10
 
 ### 5. ตั้งค่า Reverse zone File
 
-Reverse zone คือ โซนที่ใช้เก็บ record สำหรับแปลง IP Address ให้กลายเป็นชื่อโดเมน (ตรงกันข้ามกับ Forward Zone ที่แปลงชื่อเป็น IP)
-
 ```bash
 sudo nano /etc/bind/named.conf.local
 ```
 
-เพิ่มการตั้งค่าต่อไปนี้
+เพิ่มการตั้งค่าต่อไปนี้ที่ด้านล่างของ `zone "ctsurin.local"`
 
 ```
 zone "254.11.10.in-addr.arpa" {
@@ -137,12 +126,12 @@ zone "254.11.10.in-addr.arpa" {
 };
 ```
 
-note:
-
-- 254.11.10 เป็นเลข 3 ชุดแรกของ IP มาสลับลำดับจากหลังมาหน้า เช่น 192.168.100.0 จะได้ 100.192.168.in-addr.arpa
-- db.10 เป็น db.<ip> เช่น 192.168.100.0 จะได้ db.192
+> Note:<br>
+> `254.11.10` มาจากเลข 3 ชุดแรกของ IP มาสลับลำดับจากหลังมาหน้า เช่น `192.168.100.0` จะได้ `100.192.168.in-addr.arpa`
 
 คัดลอกไฟล์ `/etc/bind/db.127` แล้วตั้งชื่อเป็น `/etc/bind/db.10`
+
+> `db.10` มาจากเลขชุดแรกของ IP เช่น `192.168.100.0` จะได้เป็น `db.192`
 
 ```bash
 sudo cp /etc/bind/db.127 /etc/bind/db.10
@@ -170,34 +159,37 @@ $TTL    604800
 10      IN      PTR     ns.ctsurin.com.
 ```
 
-note:
-
-- เลข Serial ควรเพิ่มขึ้นทุกครั้งเมื่อมีการแก้ไขไฟล์ `/etc/bind/db.ctsurin.com` และ `/etc/bind/db.10` โดยเพิ่มทีละ 1 หน่วย
-
 ```bash
 sudo systemctl restart bind9.service
 ```
 
+> Note:<br>
+> ควรเพิ่มเลข Serial ขึ้นทุกครั้งๆ ละ 1 เมื่อมีการแก้ไขไฟล์ `db.ctsurin.local` หรือ `db.10`
+
 ## ทดสอบ
 
-### 1. resolv.conf
+### 1. ตั้งค่า resolv ของเครื่อง DNS Server
 
-แก้ไขไฟล์ `/etc/resolv.conf` 
+เปิดไฟล์ `/etc/resolv.conf` 
 
 ```bash
 sudo nano /etc/resolv.conf
 ```
+
+จากนั้นแก้ไขในส่วน `search` โดยเปลี่ยน `.` เป็นชื่อโดเมนที่ตั้งค่าไว้
 
 ```
 nameserver 127.0.0.53
 search ctsurin.com
 ```
 
-จากนั้นใช้คำสั่ง `resolvectl status`
+จากนั้นใช้คำสั่ง `resolvectl status` เพื่อตรวจสอบการตั้งค่าว่า ถูกต้องหรือไม่
 
 ```bash
 resolvectl status
 ```
+
+ผลลัพธ์:
 
 ```bash
 Global
@@ -209,7 +201,7 @@ Link 2 (ens33)
          Protocols: +DefaultRoute +LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
 Current DNS Server: 10.11.254.10
        DNS Servers: 10.11.254.10
-        DNS Domain: ctsurin.com
+        DNS Domain: ctsurin.local
 ```
 
 ### 2. ทดสอบการทำงานของ Caching Nameserver
@@ -219,6 +211,8 @@ Current DNS Server: 10.11.254.10
 ```bash
 dig ubuntu.com
 ```
+
+ผลลัพธ์:
 
 ```
 ; <<>> DiG 9.18.30-0ubuntu0.22.04.2-Ubuntu <<>> ubuntu.com
@@ -246,38 +240,23 @@ ubuntu.com.             60      IN      A       185.125.190.21
 ### 3. ทดลอง PING ไปยังโดเมนหลัก
 
 ```bash
-ping ctsurin.com
+ping ctsurin.local
 ```
 
-From server:
+ผลลัพธ์:
 
 ```
-noll@dns:~$ ping ctsurin.com
-PING ctsurin.com(ip6-localhost (::1)) 56 data bytes
-64 bytes from ip6-localhost (::1): icmp_seq=1 ttl=64 time=0.077 ms
-64 bytes from ip6-localhost (::1): icmp_seq=2 ttl=64 time=0.053 ms
-64 bytes from ip6-localhost (::1): icmp_seq=3 ttl=64 time=0.063 ms
+PING ctsurin.local (10.11.254.10) 56(84) bytes of data.
+64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=1 ttl=64 time=0.089 ms
+64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=2 ttl=64 time=0.164 ms
+64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=3 ttl=64 time=2.22 ms
+64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=4 ttl=64 time=0.055 ms
+64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=5 ttl=64 time=0.052 ms
 ^C
---- ctsurin.com ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2039ms
-rtt min/avg/max/mdev = 0.053/0.064/0.077/0.009 ms
+--- ctsurin.local ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4021ms
+rtt min/avg/max/mdev = 0.052/0.516/2.220/0.852 ms
 ```
 
-From client:
-
-```
-Pinging ctsurin.com [10.11.254.10] with 32 bytes of data:
-Reply from 10.11.254.10: bytes=32 time<1ms TTL=64
-Reply from 10.11.254.10: bytes=32 time<1ms TTL=64
-Reply from 10.11.254.10: bytes=32 time=1ms TTL=64
-Reply from 10.11.254.10: bytes=32 time<1ms TTL=64
-
-Ping statistics for 10.11.254.10:
-    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
-Approximate round trip times in milli-seconds:
-    Minimum = 0ms, Maximum = 1ms, Average = 0ms
-```
-
-หมายเหตุ:
-
-- เครื่อง client อย่าลืมตั้งค่า dns มายังเซิร์ฟเวอร์ ไม่อย่างนั้นจะมองไม่เห็น domain
+> Note:<br>
+> อย่าลืมกำหนด dns มายังเครื่องเซิร์ฟเวอร์ มิเช่นนั้น client จะไม่สามารถค้นหาโดเมนภายในองค์กรได้
