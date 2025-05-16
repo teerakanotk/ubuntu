@@ -46,7 +46,7 @@ network:
         addresses:
           - <primary_dns>
           - <secondary_dns>
-        search: []
+        search: [<fqdn>]
   version: 2
 ```
 
