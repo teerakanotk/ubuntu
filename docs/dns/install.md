@@ -6,9 +6,9 @@
 sudo apt update && sudo apt upgrade -y
 ```
 
-### 2.ตั้งค่า Static IP และติดตั้งแพ็คเกจ `bind9`
+### 2.ตั้งค่า Static IP และติดตั้งแพ็คเกจ
 
-[Static IP address](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
+วิธีการตั้งค่า Static IP adddress บน Linux ubuntu 22.04 LTS [Link](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
 
 ติดตั้งแพ็คเกจ bind9
 
