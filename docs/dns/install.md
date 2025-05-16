@@ -166,6 +166,8 @@ sudo systemctl restart bind9.service
 > Note:<br>
 > ควรเพิ่มเลข Serial ขึ้นทุกครั้งๆ ละ 1 เมื่อมีการแก้ไขไฟล์ `db.ctsurin.local` หรือ `db.10`
 
+<br>
+
 ## ทดสอบ
 
 ### 1. ตั้งค่า resolv ของเครื่อง DNS Server
@@ -176,11 +178,11 @@ sudo systemctl restart bind9.service
 sudo nano /etc/resolv.conf
 ```
 
-จากนั้นแก้ไขในส่วน `search` โดยเปลี่ยน `.` เป็นชื่อโดเมนที่ตั้งค่าไว้
+จากนั้นแก้ไขในส่วน `search` โดยเปลี่ยน `.` เป็นชื่อโดเมน `FQDN`
 
 ```
 nameserver 127.0.0.53
-search ctsurin.com
+search ctsurin.local
 ```
 
 จากนั้นใช้คำสั่ง `resolvectl status` เพื่อตรวจสอบการตั้งค่าว่า ถูกต้องหรือไม่
@@ -237,7 +239,9 @@ ubuntu.com.             60      IN      A       185.125.190.21
 ;; MSG SIZE  rcvd: 87
 ```
 
-### 3. ทดลอง PING ไปยังโดเมนหลัก
+### 3. PING
+
+ทดลองใช้คำสั่ง PING ไปยังโดเมน
 
 ```bash
 ping ctsurin.local
@@ -259,4 +263,4 @@ rtt min/avg/max/mdev = 0.052/0.516/2.220/0.852 ms
 ```
 
 > Note:<br>
-> อย่าลืมกำหนด dns มายังเครื่องเซิร์ฟเวอร์ มิเช่นนั้น client จะไม่สามารถค้นหาโดเมนภายในองค์กรได้
+> อย่าลืมกำหนด dns มายังเครื่องเซิร์ฟเวอร์ มิเช่นนั้นจะไม่สามารถค้นหาที่อยู่โดเมนภายในองค์กรได้
