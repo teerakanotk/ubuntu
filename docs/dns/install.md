@@ -8,29 +8,24 @@ sudo apt update && sudo apt upgrade -y
 
 ### 2.ตั้งค่า Static IP และติดตั้งแพ็คเกจ
 
-วิธีการตั้งค่า Static IP adddress บน Linux ubuntu 22.04 LTS [Link](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
+ขั้นตอนการตั้งค่า Static IP
+- [Netplan](https://github.com/teerakanotk/ubuntu/blob/main/docs/static-ip.md)
 
-ติดตั้งแพ็คเกจ bind9
-
-```bash
-sudo apt install bind9
-```
-
-ติดตั้งแพ็คเกจ `dnsutils` สำหรับทดสอบและแก้ไขปัญหา
+ติดตั้งแพ็คเกจ
 
 ```bash
-sudo apt install dnsutils
+sudo apt install bind9 dnsutils
 ```
 
 ### 3. ตั้งค่า Caching nameserver
 
-กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ `ส่งต่อ (forward)` คำขอเหล่านั้นไปยัง `IP address` ที่กำหนดเอาไว้ภายใน **forwarders**
+กรณีที่ DNS Server ภายในองค์กรไม่สามารถค้นหาชื่อโดเมนที่ผู้ใช้งานร้องขอได้ เซิร์ฟเวอร์จะทำการ `ส่งต่อ (forward)` คำขอเหล่านั้นไปยัง `DNS Server` ที่กำหนดเอาไว้ภายใน **forwarders**
 
 ```bash
 sudo nano /etc/bind/named.conf.options
 ```
 
-ในส่วน forwarders ให้เปลี่ยนจาก `0.0.0.0` เป็นที่อยู่ไอพีแอดเดรสของ dns server ที่ต้องการส่งต่อ เช่น ผู้ให้บริการอินเทอร์เน็ต (ISP)
+ในส่วน forwarders เปลี่ยนจาก `0.0.0.0` เป็นที่อยู่ไอพีแอดเดรสของ `DNS Server` ที่ต้องการส่งต่อเช่น ผู้ให้บริการอินเทอร์เน็ต (ISP)
 
 ```
 options {
@@ -89,10 +84,6 @@ sudo cp /etc/bind/db.local /etc/bind/db.ctsurin.local
 sudo nano /etc/bind/db.ctsurin.local
 ```
 
-> Note:<br>
-> เปลี่ยน `localhost` เป็น ชื่อโดเมนที่ต้องการ<br>
-> เปลี่ยน `127.0.0.1` เป็น IP address ของเครื่องเซิร์ฟเวอร์
-
 ```
 ;
 ; BIND data file for ctsurin.local
@@ -105,11 +96,13 @@ $TTL    604800
                         2419200         ; Expire
                          604800 )       ; Negative Cache TTL
 
-@       IN      NS      ns.ctsurin.local.
+@       IN      NS      ctsurin.local.
 @       IN      A       10.11.254.10
-@       IN      AAAA    ::1
-ns      IN      A       10.11.254.10
 ```
+
+> Note:<br>
+> เปลี่ยน `localhost` เป็นชื่อโดเมนที่ต้องการ<br>
+> เปลี่ยน `127.0.0.1` เป็นที่อยู่ไอพีแอดเดรสของเครื่องเซิร์ฟเวอร์
 
 ### 5. ตั้งค่า Reverse zone File
 
@@ -145,18 +138,18 @@ sudo nano /etc/bind/db.10
 
 ```
 ;
-; BIND reverse data file for local 10.11.254.XXX net
+; BIND reverse data file for 10.11.254.XXX
 ;
 $TTL    604800
-@       IN      SOA     ns.ctsurin.com. root.ctsurin.com. (
+@       IN      SOA     ctsurin.local. root.ctsurin.local. (
                               2         ; Serial
                          604800         ; Refresh
                           86400         ; Retry
                         2419200         ; Expire
                          604800 )       ; Negative Cache TTL
 ;
-@       IN      NS      ns.
-10      IN      PTR     ns.ctsurin.com.
+@       IN      NS      ctsurin.local.
+10      IN      PTR     ctsurin.local.
 ```
 
 ```bash
@@ -164,13 +157,13 @@ sudo systemctl restart bind9.service
 ```
 
 > Note:<br>
-> ควรเพิ่มเลข Serial ขึ้นทุกครั้งๆ ละ 1 เมื่อมีการแก้ไขไฟล์ `db.ctsurin.local` หรือ `db.10`
+> ทุกครั้งที่มีการแก้ไขข้อมูลภายในไฟล์ `/etc/bind/db.ctsurin.local` และ `/etc/bind/db.10` ควรเพิ่มเลข Serial ขึ้นครั้งละ 1 เพื่อบอกให้ service bind9 รับรู้ว่ามีการแก้ไขอัพเดทไฟล์
 
 <br>
 
 ## ทดสอบ
 
-### 1. ตั้งค่า resolv ของเครื่อง DNS Server
+### 1. ตั้งค่า Search domain สำหรับเครื่องให้บริการ DNS Server
 
 เปิดไฟล์ `/etc/resolv.conf` 
 
@@ -178,12 +171,15 @@ sudo systemctl restart bind9.service
 sudo nano /etc/resolv.conf
 ```
 
-จากนั้นแก้ไขในส่วน `search` โดยเปลี่ยน `.` เป็นชื่อโดเมน `FQDN`
+จากนั้นแก้ไขในส่วน `search` โดยเปลี่ยน `.` เป็นชื่อโดเมน `ctsurin.local`
 
 ```
 nameserver 127.0.0.53
 search ctsurin.local
 ```
+
+> Note:<br>
+> ให้เปลี่ยนจาก ctsurin.local เป็นชื่อโดเมนที่ต้องการ
 
 จากนั้นใช้คำสั่ง `resolvectl status` เพื่อตรวจสอบการตั้งค่าว่า ถูกต้องหรือไม่
 
@@ -208,7 +204,7 @@ Current DNS Server: 10.11.254.10
 
 ### 2. ทดสอบการทำงานของ Caching Nameserver
 
-ใช้คำสั่ง dig เพื่อตรวจสอบเวลาการตอบสนอง (Query Time) ของการค้นหาชื่อโดเมนนอกองค์กร
+ใช้คำสั่ง dig เพื่อตรวจสอบว่าสามารถค้นหาชื่อโดเมนภายนอกองค์กรได้หรือไม่
 
 ```bash
 dig ubuntu.com
@@ -251,11 +247,11 @@ ping ctsurin.local
 
 ```
 PING ctsurin.local (10.11.254.10) 56(84) bytes of data.
-64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=1 ttl=64 time=0.089 ms
-64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=2 ttl=64 time=0.164 ms
-64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=3 ttl=64 time=2.22 ms
-64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=4 ttl=64 time=0.055 ms
-64 bytes from ns.ctsurin.local (10.11.254.10): icmp_seq=5 ttl=64 time=0.052 ms
+64 bytes from ctsurin.local (10.11.254.10): icmp_seq=1 ttl=64 time=0.089 ms
+64 bytes from ctsurin.local (10.11.254.10): icmp_seq=2 ttl=64 time=0.164 ms
+64 bytes from ctsurin.local (10.11.254.10): icmp_seq=3 ttl=64 time=2.22 ms
+64 bytes from ctsurin.local (10.11.254.10): icmp_seq=4 ttl=64 time=0.055 ms
+64 bytes from ctsurin.local (10.11.254.10): icmp_seq=5 ttl=64 time=0.052 ms
 ^C
 --- ctsurin.local ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 4021ms
@@ -263,4 +259,4 @@ rtt min/avg/max/mdev = 0.052/0.516/2.220/0.852 ms
 ```
 
 > Note:<br>
-> อย่าลืมกำหนด dns มายังเครื่องเซิร์ฟเวอร์ มิเช่นนั้นจะไม่สามารถค้นหาที่อยู่โดเมนภายในองค์กรได้
+> ที่เครื่อง client อย่าลืมกำหนด dns มายังเครื่องเซิร์ฟเวอร์ มิเช่นนั้นจะไม่สามารถค้นหาที่อยู่โดเมนภายในองค์กรได้
